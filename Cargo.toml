@@ -1,0 +1,9 @@
+[package]
+name = "actix-cors"
+version = "0.1.0"
+authors = ["Arve Seljebu <arve.seljebu@gmail.com>"]
+edition = "2018"
+
+[dependencies]
+actix-web = { version = "1.0", features=["ssl"] }
+futures = "0.1"
