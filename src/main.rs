@@ -1,15 +1,17 @@
 use actix_web::client::{Client, SendRequestError};
 use actix_web::http::{uri::Uri, Method};
-use actix_web::{web, App, HttpRequest, HttpResponse, HttpServer, Responder, ResponseError};
+use actix_web::{web, App, HttpRequest, HttpResponse, HttpServer, ResponseError};
 use futures::{future, Future};
 use std::fmt;
+
+const USAGE: &str = "Usage: GET /URL\n";
 
 fn main() -> std::io::Result<()> {
     let port = std::env::var("PORT").unwrap_or_else(|_| "8080".to_string());
     let server = HttpServer::new(|| {
         App::new()
             .data(Client::new())
-            .service(web::resource("/").to(usage))
+            .service(web::resource("/").to(|| USAGE))
             .default_service(web::route().to_async(proxy))
     })
     .bind(["0.0.0.0:", &port].concat())?;
@@ -17,10 +19,6 @@ fn main() -> std::io::Result<()> {
     println!("Listening on port {}", &port);
 
     server.run()
-}
-
-fn usage() -> impl Responder {
-    "Usage: GET https://cors.seljebu.no/URL\n" // TODO use host in request
 }
 
 fn proxy(
@@ -103,13 +101,12 @@ enum ProxyError {
 
 impl fmt::Display for ProxyError {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        let usage = "Usage: GET https://cors.seljebu.no/URL\n";
         use ProxyError::*;
 
         match self {
-            UnableToParseUri => write!(f, "Unable to parse URL\n{}", usage),
-            RequestError(reason) => write!(f, "{}\n{}", reason, usage),
-            _ => write!(f, "{}", usage),
+            UnableToParseUri => write!(f, "Unable to parse URL\n{}", USAGE),
+            RequestError(reason) => write!(f, "{}\n{}", reason, USAGE),
+            _ => write!(f, "{}", USAGE),
         }
     }
 }
