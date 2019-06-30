@@ -68,6 +68,7 @@ fn proxy_request(
 ) -> impl Future<Item = HttpResponse, Error = ProxyError> {
     client
         .get(uri)
+        .no_decompress()
         .send()
         .map_err(|err| match err {
             SendRequestError::Url(error) => ProxyError::RequestError(error.to_string()),
@@ -79,8 +80,6 @@ fn proxy_request(
             let headers = response.headers().iter().filter(|(h, _)| {
                 *h != "connection"
                     && *h != "access-control-allow-origin"
-                    && *h != "transfer-encoding"
-                    && *h != "content-encoding"
                     && *h != "content-length"
             });
             for (header_name, header_value) in headers {
