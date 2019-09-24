@@ -48,7 +48,6 @@ fn parse_uri(req: HttpRequest) -> impl Future<Item = Uri, Error = ProxyError> {
         return future::failed(ProxyError::UnableToParseUri);
     } else if let Ok(parsed) = get_whole_path(&req).parse::<Uri>() {
         if parsed.host() != None && is_valid_scheme(parsed.scheme_str()) {
-            dbg!(&parsed);
             return future::ok(parsed);
         }
     }
