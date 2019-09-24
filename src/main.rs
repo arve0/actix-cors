@@ -46,12 +46,17 @@ fn is_get_method(req: HttpRequest) -> impl Future<Item = HttpRequest, Error = Pr
 fn parse_uri(req: HttpRequest) -> impl Future<Item = Uri, Error = ProxyError> {
     if req.path().is_empty() {
         return future::failed(ProxyError::UnableToParseUri);
-    } else if let Ok(parsed) = req.path()[1..].parse::<Uri>() {
+    } else if let Ok(parsed) = get_whole_path(&req).parse::<Uri>() {
         if parsed.host() != None && is_valid_scheme(parsed.scheme_str()) {
+            dbg!(&parsed);
             return future::ok(parsed);
         }
     }
     future::failed(ProxyError::UnableToParseUri)
+}
+
+fn get_whole_path(req: &HttpRequest) -> String {
+    [&req.path()[1..], "?", req.query_string()].concat()
 }
 
 fn is_valid_scheme(scheme: Option<&str>) -> bool {
